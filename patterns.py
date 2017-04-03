@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.misc import imresize
 
 def pretty_print(x):
     """
@@ -9,116 +10,34 @@ def pretty_print(x):
     4 : Empty
     """
     # 91 = red
-    colors = [ "\033[90m -", "\033[92m #", "\033[93m #", "\033[93m #", "\033[90m  "]
+    colors = [ "\033[90m _", "\033[92m #", "\033[93m #", "\033[93m #", "\033[90m  "]
     fn = lambda i: colors[int(i)]
+
     for r in x:
         print(''.join(map(fn, r)))
+
     print("\033[00m")
 
-patterns = []
+def checkerboard(width, height, block_size):
+    board = np.zeros((width, height), dtype=bool)
+    for i in range(0, height, block_size):
+        for j in range(0, width, block_size*2):
+            if i % (2*block_size) == 0:
+                board[i: i+block_size, j: j+block_size] = 1
+            else:
+                board[i: i+block_size, j+block_size: j+2*block_size] = 1
+    return board
 
-# target = np.ones((8,8), dtype=bool)
-# target[2:6, 2:6] = 0
-# patterns.append(target)
+def random(width, height):
+    return np.random.randint(0, 2, (height, width))
 
-
-block_size = 4
-target = np.zeros((16, 16), dtype=bool)
-for i in range(0, 16, block_size):
-    for j in range(0, 16, block_size*2):
-        if i % (2*block_size) == 0:
-            target[i:i+block_size, j:j+block_size] = 1
-        else:
-            target[i:i+block_size, j+block_size:j+2*block_size] = 1
-
-patterns.append(target)
-
-# patterns.append(np.array([
-#     [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
-#     [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-#     [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1],
-#     [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1],
-#     [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-#     [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ], dtype=bool))
-
-# patterns.append(np.array([
-#     [ 1, 1, 0, 0, 1, 1, 0, 0],
-#     [ 1, 1, 0, 0, 1, 1, 0, 0],
-#     [ 0, 0, 1, 1, 0, 0, 1, 1],
-#     [ 0, 0, 1, 1, 0, 0, 1, 1],
-#     [ 1, 1, 0, 0, 1, 1, 0, 0],
-#     [ 1, 1, 0, 0, 1, 1, 0, 0],
-#     [ 0, 0, 1, 1, 0, 0, 1, 1],
-#     [ 0, 0, 1, 1, 0, 0, 1, 1]
-# ], dtype=bool))
-
-# patterns.append(np.array([
-#     [ 1, 1, 1, 1, 1, 1, 1, 0],
-#     [ 1, 1, 1, 1, 1, 1, 1, 1],
-#     [ 1, 1, 0, 0, 0, 0, 1, 1],
-#     [ 1, 1, 0, 0, 0, 0, 1, 1],
-#     [ 1, 1, 1, 1, 1, 1, 1, 1],
-#     [ 1, 1, 1, 1, 1, 1, 1, 0],
-#     [ 1, 1, 0, 0, 0, 1, 1, 1],
-#     [ 1, 1, 0, 0, 0, 0, 1, 1]
-# ], dtype=bool))
-
-
-# # Face
-# patterns.append(np.array([
-#     [ 1, 1, 1, 1, 1, 1, 1, 1],
-#     [ 1, 0, 0, 0, 0, 0, 0, 1],
-#     [ 1, 0, 1, 0, 0, 1, 0, 1],
-#     [ 1, 0, 0, 0, 0, 0, 0, 1],
-#     [ 1, 0, 1, 0, 0, 1, 0, 1],
-#     [ 1, 0, 0, 1, 1, 0, 0, 1],
-#     [ 1, 0, 0, 0, 0, 0, 0, 1],
-#     [ 1, 1, 1, 1, 1, 1, 1, 1]
-# ], dtype=bool))
-
-# patterns.append(np.array([
-#     [1, 0, 0, 0, 1, 1, 0, 1],
-#     [0, 1, 1, 0, 0, 0, 1, 1],
-#     [0, 1, 1, 0, 0, 0, 0, 1],
-#     [0, 0, 0, 1, 1, 1, 0, 1],
-#     [0, 0, 0, 0, 1, 1, 0, 0],
-#     [0, 1, 0, 0, 0, 1, 1, 1],
-#     [1, 1, 0, 1, 0, 1, 1, 1],
-#     [0, 0, 0, 0, 1, 1, 1, 1]
-# ], dtype=bool))
-
-patterns.append(np.array([
-    [0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1],
-    [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0],
-    [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1],
-    [1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1],
-    [0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0],
-    [1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0],
-    [0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
-    [1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1],
-    [0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0],
-    [0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
-    [1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1],
-    [0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0],
-    [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ],dtype=bool))
+def random_scaled(width, height, scale=3):
+    a = np.random.randint(0, 2, (height//scale, width/scale))
+    b = np.zeros((width, height), dtype=int)
+    for (i, j), v in np.ndenumerate(a):
+        b[i*scale:i*scale+scale, j*scale:j*scale+scale] = v
+    return b
 
 if __name__ == '__main__':
-    for p in patterns:
-        pretty_print(p)
-        # print(p.astype(int))
+    pretty_print(random(32, 32))
+    pretty_print(random_half_scaled(32, 32))

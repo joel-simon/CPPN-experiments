@@ -2,10 +2,10 @@ from __future__ import print_function
 import numpy as np
 import neat
 from neat import population, config, nn
-from classification import balanced_accuracy_score, f1_score
+from classification import balanced_accuracy
 
 def diff(a, b):
-    return balanced_accuracy_score(a.flatten().tolist(), b.flatten().tolist())
+    return balanced_accuracy(a, b)
 
 def express_cppn(net, w, h):
     grid = np.zeros((w, h), dtype=bool)
@@ -13,13 +13,13 @@ def express_cppn(net, w, h):
     for x in range(w):
 
         for y in range(h):
-
+            # Map x, y to [-1, 1]
             _x = -1.0 + 2.0 * x / (w - 1)
             _y = -1.0 + 2.0 * y / (h - 1)
 
             out = net.serial_activate([_x, _y])
 
-            grid[x, y] = out[0]
+            grid[x, y] = (out[0] > .5)
 
     return grid
 
@@ -35,25 +35,27 @@ def express_recurrent_cppn(net, w, h, max_steps):
             for y in range(h):
 
                 inputs.fill(0)
-                inputs[0] = grid[x, y]
+
+                inputs[0] = grid[x, y] * 2 - 1
                 inputs[1] = -1.0 + 2.0 * x / (w - 1)
                 inputs[2] = -1.0 + 2.0 * y / (h - 1)
 
+                # Map each neighbor to (-1 | 1)
                 if x > 0:
-                    inputs[3] = grid[x-1, y]
+                    inputs[3] = (grid[x-1, y]) * 2 - 1
 
                 if x < w-1:
-                    inputs[4] = grid[x+1, y]
+                    inputs[4] = (grid[x+1, y]) * 2 - 1
 
                 if y > 0:
-                    inputs[5] = grid[x, y-1]
+                    inputs[5] = (grid[x, y-1]) * 2 - 1
 
                 if y < h-1:
-                    inputs[6] = grid[x, y+1]
+                    inputs[6] = (grid[x, y+1]) * 2 - 1
 
                 out = net.serial_activate(inputs)
 
-                next_grid[x, y] = bool(out[0])
+                next_grid[x, y] = (out[0] > 0.5)
 
         if np.array_equal(grid, next_grid):
             return grid
