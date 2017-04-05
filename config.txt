@@ -9,14 +9,14 @@ reproduction_type    = DefaultReproduction
 
 [phenotype]
 input_nodes          = 2
-hidden_nodes         = 5
+hidden_nodes         = 3
 output_nodes         = 1
 initial_connection   = partial 0.5
 max_weight           = +1
 min_weight           = -1
 feedforward          = 1
 activation_functions = abs clamped exp gauss hat identity inv log relu sigmoid sin tanh square
-weight_stdev         = .01
+weight_stdev         = .03
 
 [genetic]
 pop_size                = 100
@@ -44,7 +44,7 @@ weight_coefficient      = 0.5
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation       = 5
+max_stagnation       = 100
 
 [DefaultReproduction]
 elitism              = 1

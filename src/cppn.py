@@ -23,15 +23,13 @@ def express_cppn(net, w, h):
 
     return grid
 
-def express_recurrent_cppn(net, w, h, max_steps):
+def express_recurrent_cppn(net, w, h, max_steps, yield_steps=False):
     grid = np.zeros((w, h), dtype=bool)
     next_grid = np.zeros((w, h), dtype=bool)
     inputs = np.zeros(7)
 
     for s in range(max_steps):
-
         for x in range(w):
-
             for y in range(h):
 
                 inputs.fill(0)
@@ -57,22 +55,20 @@ def express_recurrent_cppn(net, w, h, max_steps):
 
                 next_grid[x, y] = (out[0] > 0.5)
 
-        if np.array_equal(grid, next_grid):
-            return grid
+        grid, next_grid = next_grid, grid
+        next_grid.fill(False)
 
-        else:
-            grid, next_grid = next_grid, grid
-            next_grid.fill(False)
+        if yield_steps:
+            yield grid.copy()
 
-    return grid
+    if not yield_steps:
+        return grid
 
 def evolve(config, eval_func, pattern, generations):
     """
         eval_func = (net, w, h) -> bool_map of shape [w, h]
     """
-    config.report = False
     pop = population.Population(config)
-
     w, h = pattern.shape
 
     # Use closure to pass evaluate function.
@@ -82,16 +78,14 @@ def evolve(config, eval_func, pattern, generations):
             out = eval_func(net, w, h)
             g.fitness = diff(pattern, out)
 
-        # best = max(genomes, key=lambda g:g.fitness)
-        # evaluate(best, log=True)
-
     pop.run(evaluate_all, generations)
 
     winner = pop.statistics.best_genome()
     net = nn.create_feed_forward_phenotype(winner)
     out = eval_func(net, w, h)
 
-    return winner.fitness, out
+    return pop.statistics, out
+    # return winner.fitness, out
 
 def evolve_cppn(config, pattern, generations):
     return evolve(config, express_cppn, pattern, generations)
@@ -104,5 +98,15 @@ def evolve_recurrent_cppn(config, pattern, max_steps, generations):
     return evolve(config, eval_func, pattern, generations)
 
 
+if __name__ == '__main__':
+    import numpy as np
+    from neat.config import Config # Python neat library
+    from neat import nn
+    import patterns
+    target = patterns.checkerboard(16, 16, 4)
+    config = Config('config.txt')
+    config.pop_size = 50
+    config.input_nodes = 7
+    evolve_recurrent_cppn(config, target, 2, 50)
 
 

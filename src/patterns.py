@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.misc import imresize
 
 def pretty_print(x):
     """

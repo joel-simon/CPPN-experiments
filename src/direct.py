@@ -35,53 +35,6 @@ class Individual(object):
 
         return child
 
-class IndividualNoWrap(Individual):
-    def crossover(self, other):
-        m, n = self.genome.shape
-        i0, j0 = randint(0, m), randint(0, n)
-        i1, j1 = randint(i0, m), randint(j0, n)
-        child = copy.deepcopy(self)
-        child.genome[i0:i1, j0:j1] = other.genome[i0:i1, j0:j1]
-        return child
-
-class IndividualRandomCross(Individual):
-    def crossover(self, other):
-        child = copy.deepcopy(self)
-
-        m, n   = self.shape
-        h, w   = randint(0, m), randint(0, n) # Size of crossover block
-        ic, jc = randint(0, m), randint(0, n) # Child index offset
-        io, jo = randint(0, m), randint(0, n) # Other index offset
-
-        for i in range(h):
-            for j in range(w):
-                v = other.genome[(i+io)%m, (j+jo)%m]
-                child.genome[(i+ic)%m, (j+jc)%m] = v
-
-        return child
-
-class IndividualTwoPointCross(Individual):
-    def crossover(self, other):
-        child = copy.deepcopy(self)
-
-        genome = child.genome.flatten()
-        other = other.genome.flatten()
-
-        i, j = randint(0, genome.size), randint(0, genome.size)
-
-        if j < i:
-            length = genome.size - j + i
-        else:
-            length = j - i
-
-        i = randint(0, genome.size)
-        inds = list(range(i, i+length))
-
-        np.put(genome, inds, np.take(other, inds, mode='wrap'), mode='wrap')
-        child.genome = genome.reshape(self.shape)
-
-        return child
-
 def GA(pop_size, generations, elitism, target, Individual, mutation_rate, view=False):
     shape = target.shape
 
