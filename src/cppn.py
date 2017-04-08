@@ -8,6 +8,7 @@ def diff(a, b):
     return balanced_accuracy(a, b)
 
 def express_cppn(net, w, h):
+    # print('express_cppn')
     grid = np.zeros((w, h), dtype=bool)
 
     for x in range(w):
@@ -23,10 +24,11 @@ def express_cppn(net, w, h):
 
     return grid
 
-def express_recurrent_cppn(net, w, h, max_steps, yield_steps=False):
+def express_recurrent_cppn(net, w, h, max_steps, return_steps=False):
     grid = np.zeros((w, h), dtype=bool)
     next_grid = np.zeros((w, h), dtype=bool)
     inputs = np.zeros(7)
+    steps = []
 
     for s in range(max_steps):
         for x in range(w):
@@ -58,10 +60,12 @@ def express_recurrent_cppn(net, w, h, max_steps, yield_steps=False):
         grid, next_grid = next_grid, grid
         next_grid.fill(False)
 
-        if yield_steps:
-            yield grid.copy()
+        if return_steps:
+            steps.append(grid.copy())
 
-    if not yield_steps:
+    if return_steps:
+        return steps
+    else:
         return grid
 
 def evolve(config, eval_func, pattern, generations):
@@ -106,7 +110,11 @@ if __name__ == '__main__':
     target = patterns.checkerboard(16, 16, 4)
     config = Config('config.txt')
     config.pop_size = 50
+
+    config.hidden_nodes = 0
+    config.initial_connection = 'fully_connected'
+
     config.input_nodes = 7
-    evolve_recurrent_cppn(config, target, 2, 50)
+    evolve_recurrent_cppn(config, target, 16, 50)
 
 

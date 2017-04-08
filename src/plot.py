@@ -15,14 +15,13 @@ def plot_fitnesses(data, labels, name):
         axes[0].errorbar(X, means[li][0], stds[li][0], label=l)
         axes[1].errorbar(X, means[li][1], stds[li][1], label=l)
 
-
     axes[0].set_xlabel('Generations')
     axes[0].set_ylabel('Average fitness.')
     axes[0].legend(loc="best")
 
 def plot_best(F, O, i=0):
-    print('Avg Best Random Fitness:', F[i, 0, :, -1].mean())
-    print('Avg Best Grid Fitness:', F[i, 1, :, -1].mean())
+    print('Best Random Fitness:', F[i, 0, :, -1].max())
+    print('Best Grid Fitness:', F[i, 1, :, -1].max())
     best_random = O[i, 0, np.argmax(F[i, 0].max(axis=1))]
     best_grid = O[i, 1, np.argmax(F[i, 1].max(axis=1))]
     plot_patterns(best_random, best_grid)
